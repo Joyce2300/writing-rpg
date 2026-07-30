@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>等待者 RPG</title>
+
+<style>
+body{
+    background:#181818;
+    color:white;
+    font-family:sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+.card{
+    background:#252525;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:15px;
+}
+
+button{
+    width:100%;
+    margin-top:10px;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    background:#4f8cff;
+    color:white;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+.stat{
+    margin:8px 0;
+}
+
+#log{
+    white-space:pre-line;
+    line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎮 等待者 RPG</h2>
+
+<div class="card">
+
+<h3 id="name"></h3>
+
+<div class="stat">❤️ HP：<span id="hp"></span></div>
+<div class="stat">✨ 希望：<span id="hope"></span></div>
+<div class="stat">🎻 創造：<span id="create"></span></div>
+<div class="stat">📖 知識：<span id="know"></span></div>
+
+<hr>
+
+<div>
+今日心境：
+<span id="mood"></span>
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>今日事件</h3>
+
+<div id="event"></div>
+
+</div>
+
+<div class="card">
+
+<button onclick="writePoem()">
+✍️ 寫詩
+</button>
+
+<button onclick="goStore()">
+🏪 去便利店
+</button>
+
+<button onclick="sleepNow()">
+😴 睡覺
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>冒險紀錄</h3>
+
+<div id="log"></div>
+
+</div>
+
+<script>
+
+let player = JSON.parse(localStorage.getItem("waitingRPG"));
+
+if(!player){
+
+player={
+name:"亞欣",
+hp:80,
+hope:50,
+create:70,
+know:60
+};
+
+}
+
+const moods=[
+"☀️ 平靜",
+"🌧 疲倦",
+"🌙 虛空",
+"✨ 靈感",
+"🔥 熱血"
+];
+
+const events=[
+"今天下雨了。",
+"便利店推出新品。",
+"路過圖書館。",
+"收到一個陌生人的微笑。",
+"黃昏很好看。",
+"今天特別想寫字。"
+];
+
+let mood=moods[Math.floor(Math.random()*moods.length)];
+let event=events[Math.floor(Math.random()*events.length)];
+
+function refresh(){
+
+name.innerHTML=player.name;
+
+hp.innerHTML=player.hp;
+
+hope.innerHTML=player.hope;
+
+create.innerHTML=player.create;
+
+know.innerHTML=player.know;
+
+document.getElementById("mood").innerHTML=mood;
+
+document.getElementById("event").innerHTML=event;
+
+localStorage.setItem(
+"waitingRPG",
+JSON.stringify(player)
+);
+
+}
+
+function log(text){
+
+document.getElementById("log").innerHTML=
+text+"\n\n"+
+document.getElementById("log").innerHTML;
+
+}
+
+function writePoem(){
+
+player.create+=5;
+
+player.hope+=3;
+
+log("✍️ 你寫了一首詩。\n創造 +5\n希望 +3");
+
+refresh();
+
+}
+
+function goStore(){
+
+player.hp+=8;
+
+player.hope+=2;
+
+log("🏪 買了一杯咖啡。\nHP +8\n希望 +2");
+
+refresh();
+
+}
+
+function sleepNow(){
+
+player.hp+=20;
+
+player.hope+=5;
+
+log("😴 好好睡了一覺。\nHP +20\n希望 +5");
+
+refresh();
+
+}
+
+refresh();
+
+</script>
+
+</body>
+</html>
