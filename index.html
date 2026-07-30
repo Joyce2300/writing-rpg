@@ -1,212 +1,480 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>等待者 RPG</title>
 
 <style>
+
 body{
-    background:#181818;
-    color:white;
-    font-family:sans-serif;
-    margin:0;
-    padding:20px;
+    background:#101014;
+    color:#eee;
+    font-family:
+    "Noto Sans TC",
+    sans-serif;
+    padding:15px;
 }
 
-.card{
-    background:#252525;
-    border-radius:15px;
+.box{
+    background:#22232a;
+    border-radius:18px;
     padding:20px;
     margin-bottom:15px;
 }
 
+h1,h2{
+    text-align:center;
+}
+
 button{
+
     width:100%;
+    padding:14px;
     margin-top:10px;
-    padding:15px;
-    border:none;
-    border-radius:10px;
-    font-size:18px;
-    background:#4f8cff;
+
+    border:0;
+    border-radius:12px;
+
+    background:#5967ff;
     color:white;
+
+    font-size:17px;
 }
 
-button:active{
-    transform:scale(.98);
+button:hover{
+    opacity:.8;
 }
 
-.stat{
-    margin:8px 0;
+.bar{
+
+background:#333;
+border-radius:10px;
+overflow:hidden;
+
 }
 
-#log{
-    white-space:pre-line;
-    line-height:1.6;
+.fill{
+
+height:15px;
+background:#8fa3ff;
+
 }
+
+
+.item{
+
+padding:8px;
+
+}
+
+
 </style>
+
 </head>
+
 
 <body>
 
-<h2>🎮 等待者 RPG</h2>
 
-<div class="card">
+<h1>🌙 等待者 RPG</h1>
 
-<h3 id="name"></h3>
 
-<div class="stat">❤️ HP：<span id="hp"></span></div>
-<div class="stat">✨ 希望：<span id="hope"></span></div>
-<div class="stat">🎻 創造：<span id="create"></span></div>
-<div class="stat">📖 知識：<span id="know"></span></div>
+<div class="box">
 
-<hr>
 
-<div>
-今日心境：
-<span id="mood"></span>
+<h2 id="playerName"></h2>
+
+
+<p>
+稱號：
+<span id="title"></span>
+</p>
+
+
+<p>
+Lv.<span id="level"></span>
+EXP：
+<span id="exp"></span>
+</p>
+
+
+
+<p>❤️ HP <span id="hp"></span></p>
+
+
+<div class="bar">
+<div class="fill" id="hpBar"></div>
 </div>
 
+
+<p>
+✨ 希望：
+<span id="hope"></span>
+</p>
+
+
+<p>
+🎻 創造：
+<span id="create"></span>
+</p>
+
+
 </div>
 
-<div class="card">
 
-<h3>今日事件</h3>
 
-<div id="event"></div>
+<div class="box">
+
+<h2>🗺️ 今日探索</h2>
+
+<p id="place"></p>
+
+<button onclick="explore()">
+探索
+</button>
+
 
 </div>
 
-<div class="card">
 
-<button onclick="writePoem()">
+
+<div class="box">
+
+
+<h2>🎒 行動</h2>
+
+
+<button onclick="poem()">
 ✍️ 寫詩
 </button>
 
-<button onclick="goStore()">
+
+<button onclick="store()">
 🏪 去便利店
 </button>
 
-<button onclick="sleepNow()">
-😴 睡覺
+
+<button onclick="rest()">
+😴 休息
 </button>
 
-</div>
 
-<div class="card">
-
-<h3>冒險紀錄</h3>
-
-<div id="log"></div>
 
 </div>
+
+
+
+<div class="box">
+
+<h2>🎒 背包</h2>
+
+<div id="bag"></div>
+
+</div>
+
+
+
+<div class="box">
+
+<h2>📜 冒險紀錄</h2>
+
+<p id="log"></p>
+
+
+</div>
+
+
 
 <script>
 
-let player = JSON.parse(localStorage.getItem("waitingRPG"));
 
-if(!player){
+let player =
+JSON.parse(
+localStorage.getItem("waiting")
+)
+||
+{
 
-player={
 name:"亞欣",
+
+title:"便利店詩人",
+
+level:1,
+
+exp:0,
+
 hp:80,
+
 hope:50,
+
 create:70,
-know:60
+
+bag:[
+"🎻 中提琴",
+"📖 筆記本"
+]
+
 };
 
-}
 
-const moods=[
-"☀️ 平靜",
-"🌧 疲倦",
-"🌙 虛空",
-"✨ 靈感",
-"🔥 熱血"
+
+let places=[
+
+"🏪 便利店",
+
+"📚 圖書館",
+
+"🌳 公園",
+
+"🚉 高鐵站",
+
+"🌧 雨中的街道"
+
 ];
 
-const events=[
-"今天下雨了。",
-"便利店推出新品。",
-"路過圖書館。",
-"收到一個陌生人的微笑。",
-"黃昏很好看。",
-"今天特別想寫字。"
-];
 
-let mood=moods[Math.floor(Math.random()*moods.length)];
-let event=events[Math.floor(Math.random()*events.length)];
 
-function refresh(){
-
-name.innerHTML=player.name;
-
-hp.innerHTML=player.hp;
-
-hope.innerHTML=player.hope;
-
-create.innerHTML=player.create;
-
-know.innerHTML=player.know;
-
-document.getElementById("mood").innerHTML=mood;
-
-document.getElementById("event").innerHTML=event;
+function save(){
 
 localStorage.setItem(
-"waitingRPG",
+"waiting",
 JSON.stringify(player)
 );
 
 }
 
-function log(text){
 
-document.getElementById("log").innerHTML=
-text+"\n\n"+
-document.getElementById("log").innerHTML;
+
+function update(){
+
+
+playerName.innerHTML=
+player.name;
+
+
+title.innerHTML=
+player.title;
+
+
+level.innerHTML=
+player.level;
+
+
+exp.innerHTML=
+player.exp+"/100";
+
+
+hp.innerHTML=
+player.hp+"/100";
+
+
+hope.innerHTML=
+player.hope;
+
+
+create.innerHTML=
+player.create;
+
+
+
+hpBar.style.width=
+player.hp+"%";
+
+
+
+bag.innerHTML=
+player.bag
+.map(
+x=>"<div class='item'>"+x+"</div>"
+)
+.join("");
+
+
+
+save();
 
 }
 
-function writePoem(){
+
+
+function writeLog(t){
+
+log.innerHTML=
+t+
+"<br><br>"+
+log.innerHTML;
+
+}
+
+
+
+
+function gainExp(num){
+
+player.exp+=num;
+
+
+if(player.exp>=100){
+
+player.level++;
+
+player.exp=0;
+
+player.hope+=10;
+
+writeLog(
+"✨ 升級了！現在 Lv."+player.level
+);
+
+}
+
+}
+
+
+
+
+function explore(){
+
+let p=
+places[
+Math.floor(
+Math.random()*places.length
+)
+];
+
+
+place.innerHTML=
+"你來到了："+p;
+
+
+
+let event=[
+
+"遇見一位陌生人，他給你一句鼓勵。",
+
+"找到了一張舊車票。",
+
+"聽見遠方傳來的音樂。",
+
+"買了一杯咖啡。"
+
+][Math.floor(Math.random()*4)];
+
+
+
+writeLog(
+p+
+"<br>"+
+event
+);
+
+
+gainExp(20);
+
+
+}
+
+
+
+
+function poem(){
+
 
 player.create+=5;
 
 player.hope+=3;
 
-log("✍️ 你寫了一首詩。\n創造 +5\n希望 +3");
 
-refresh();
+player.bag.push(
+"✍️ 新詩碎片"
+);
+
+
+gainExp(15);
+
+
+writeLog(
+"你寫下一首詩。<br>"+
+"創造+5，希望+3"
+);
+
+
+update();
+
 
 }
 
-function goStore(){
 
-player.hp+=8;
 
-player.hope+=2;
 
-log("🏪 買了一杯咖啡。\nHP +8\n希望 +2");
+function store(){
 
-refresh();
+
+player.hp+=10;
+
+
+if(player.hp>100)
+player.hp=100;
+
+
+player.bag.push(
+"☕ 咖啡"
+);
+
+
+gainExp(10);
+
+
+writeLog(
+"便利店休息。HP+10"
+);
+
+
+update();
 
 }
 
-function sleepNow(){
+
+
+
+function rest(){
+
 
 player.hp+=20;
 
+
+if(player.hp>100)
+player.hp=100;
+
+
 player.hope+=5;
 
-log("😴 好好睡了一覺。\nHP +20\n希望 +5");
 
-refresh();
+gainExp(5);
+
+
+writeLog(
+"睡了一覺。世界暫時安靜下來。"
+);
+
+
+update();
 
 }
 
-refresh();
+
+
+
+update();
+
 
 </script>
 
+
 </body>
+
 </html>
